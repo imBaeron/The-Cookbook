@@ -65,3 +65,13 @@ export const typography = {
 
 export const theme = { colors, fonts, spacing, radius, typography };
 export default theme;
+
+// Shared react-navigation header style — used by both RecipeStackNavigator
+// (Home/Search Results/Recipe Detail) and MainTabNavigator (Saved/Shopping/
+// Profile) so every screen's header is guaranteed to match, from one place.
+export const headerAppearance = {
+  headerStyle: { backgroundColor: colors.cover },
+  headerTintColor: colors.paper,
+  headerTitleStyle: { fontFamily: fonts.serif, fontSize: 18 },
+  headerShadowVisible: false,
+};

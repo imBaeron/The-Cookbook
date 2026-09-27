@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { View, Text, StyleSheet, FlatList } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, StyleSheet, FlatList, Text } from 'react-native';
 import { colors } from '../../constants/colors';
 import { typography, spacing } from '../../constants/theme';
 import RecipeCard from '../../components/RecipeCard';
@@ -23,10 +22,7 @@ export default function SavedRecipesScreen({ navigation }) {
   useFocusEffect(loadSaved);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={typography.screenTitle}>Saved</Text>
-      </View>
+    <View style={styles.container}>
       <FlatList
         data={savedRecipes}
         keyExtractor={(item) => String(item.id)}
@@ -48,12 +44,11 @@ export default function SavedRecipesScreen({ navigation }) {
           />
         )}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
-  header: { padding: spacing.lg, paddingBottom: 0 },
   body: { padding: spacing.lg, paddingBottom: spacing.xxl },
 });

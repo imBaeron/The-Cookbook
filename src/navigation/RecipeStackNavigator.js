@@ -3,7 +3,7 @@ import HomeScreen from '../screens/home/HomeScreen';
 import SearchResultsScreen from '../screens/home/SearchResultsScreen';
 import RecipeDetailScreen from '../screens/recipe/RecipeDetailScreen';
 import { colors } from '../constants/colors';
-import { fonts } from '../constants/theme';
+import { headerAppearance } from '../constants/theme';
 
 const Stack = createNativeStackNavigator();
 
@@ -11,10 +11,7 @@ export default function RecipeStackNavigator() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerStyle: { backgroundColor: colors.cover },
-        headerTintColor: colors.paper,
-        headerTitleStyle: { fontFamily: fonts.serif, fontSize: 18 },
-        headerShadowVisible: false,
+        ...headerAppearance,
         contentStyle: { backgroundColor: colors.paper },
         // No transition animation — screens switch instantly.
         animation: 'none',

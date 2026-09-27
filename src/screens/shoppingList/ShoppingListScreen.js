@@ -1,5 +1,4 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
 import { typography, spacing, radius } from '../../constants/theme';
@@ -15,22 +14,19 @@ export default function ShoppingListScreen() {
   const checkedCount = items.filter((i) => i.checked).length;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <Text style={typography.screenTitle}>Shopping List</Text>
-        {items.length > 0 && (
-          <View style={styles.headerActions}>
-            <TouchableOpacity onPress={clearChecked} disabled={checkedCount === 0}>
-              <Text style={[styles.actionText, checkedCount === 0 && styles.actionTextDisabled]}>
-                Clear checked
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={clearAll}>
-              <Text style={styles.actionText}>Clear all</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      </View>
+    <View style={styles.container}>
+      {items.length > 0 && (
+        <View style={styles.actionsRow}>
+          <TouchableOpacity onPress={clearChecked} disabled={checkedCount === 0}>
+            <Text style={[styles.actionText, checkedCount === 0 && styles.actionTextDisabled]}>
+              Clear checked
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={clearAll}>
+            <Text style={styles.actionText}>Clear all</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <FlatList
         data={items}
@@ -66,7 +62,7 @@ export default function ShoppingListScreen() {
           </View>
         )}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -76,14 +72,13 @@ function formatAmount(amount) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
-  header: {
+  actionsRow: {
     padding: spacing.lg,
     paddingBottom: spacing.sm,
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: spacing.md,
   },
-  headerActions: { flexDirection: 'row', gap: spacing.md },
   actionText: { color: colors.paprika, fontFamily: typography.label.fontFamily, fontSize: 12 },
   actionTextDisabled: { color: colors.inkFaint },
   body: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl },
