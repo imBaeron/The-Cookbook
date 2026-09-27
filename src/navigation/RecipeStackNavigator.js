@@ -16,8 +16,8 @@ export default function RecipeStackNavigator() {
         headerTitleStyle: { fontFamily: fonts.serif, fontSize: 18 },
         headerShadowVisible: false,
         contentStyle: { backgroundColor: colors.paper },
-        // Built-in native page-flip transition — no custom animation code needed.
-        animation: 'flip',
+        // No transition animation — screens switch instantly.
+        animation: 'none',
       }}
     >
       <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'The Cookbook' }} />
