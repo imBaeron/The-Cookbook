@@ -14,7 +14,7 @@ export default function HomeScreen({ navigation }) {
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState('name');
   const [picks, setPicks] = useState([]);
-  const isBookmarked = useBookmarksStore((s) => s.isBookmarked);
+  const bookmarkedIds = useBookmarksStore((s) => s.bookmarkedIds);
   const toggleBookmark = useBookmarksStore((s) => s.toggleBookmark);
 
   const loadPicks = useCallback(() => {
@@ -63,7 +63,7 @@ export default function HomeScreen({ navigation }) {
           <View style={styles.cardWrap}>
             <RecipeCard
               recipe={item}
-              saved={isBookmarked(item.id)}
+              saved={bookmarkedIds.includes(item.id)}
               onToggleSave={() => toggleBookmark(item.id)}
               onPress={() => navigation.navigate('RecipeDetail', { recipeId: item.id })}
             />

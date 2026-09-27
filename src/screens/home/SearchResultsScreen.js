@@ -9,7 +9,7 @@ import { useBookmarksStore } from '../../store/useBookmarksStore';
 export default function SearchResultsScreen({ route, navigation }) {
   const { query = '', mode = 'name' } = route.params ?? {};
   const [results, setResults] = useState([]);
-  const isBookmarked = useBookmarksStore((s) => s.isBookmarked);
+  const bookmarkedIds = useBookmarksStore((s) => s.bookmarkedIds);
   const toggleBookmark = useBookmarksStore((s) => s.toggleBookmark);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function SearchResultsScreen({ route, navigation }) {
         renderItem={({ item }) => (
           <RecipeCard
             recipe={item}
-            saved={isBookmarked(item.id)}
+            saved={bookmarkedIds.includes(item.id)}
             onToggleSave={() => toggleBookmark(item.id)}
             onPress={() => navigation.navigate('RecipeDetail', { recipeId: item.id })}
           />

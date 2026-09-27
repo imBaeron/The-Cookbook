@@ -12,7 +12,7 @@ export default function RecipeDetailScreen({ route, navigation }) {
   const { recipeId } = route.params ?? {};
   const [recipe, setRecipe] = useState(null);
 
-  const isBookmarked = useBookmarksStore((s) => s.isBookmarked);
+  const bookmarkedIds = useBookmarksStore((s) => s.bookmarkedIds);
   const toggleBookmark = useBookmarksStore((s) => s.toggleBookmark);
   const addIngredientsFromRecipe = useShoppingListStore((s) => s.addIngredientsFromRecipe);
 
@@ -32,7 +32,7 @@ export default function RecipeDetailScreen({ route, navigation }) {
   }
 
   const tags = getTags(recipe);
-  const saved = isBookmarked(recipe.id);
+  const saved = bookmarkedIds.includes(recipe.id);
 
   const handleAddToShoppingList = () => {
     addIngredientsFromRecipe(recipe);

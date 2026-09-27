@@ -2,7 +2,11 @@ import { create } from 'zustand';
 
 // PROTOTYPE VERSION: in-memory only (resets when the app restarts). Step 7
 // (post-presentation) swaps this internal storage for AsyncStorage so
-// bookmarks persist — every screen using isBookmarked()/toggleBookmark()
+// Note: screens should read `bookmarkedIds` directly (e.g.
+// `bookmarkedIds.includes(id)`) rather than calling isBookmarked() below —
+// selecting a function from a Zustand store never triggers a re-render,
+// since the function reference itself never changes. Selecting the actual
+// array does.
 // stays exactly the same.
 export const useBookmarksStore = create((set, get) => ({
   bookmarkedIds: [],
