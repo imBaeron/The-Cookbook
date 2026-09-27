@@ -8,7 +8,6 @@ const ICONS = {
   RecipeStack: 'book',
   Saved: 'bookmark',
   ShoppingList: 'cart',
-  Profile: 'person-circle',
 };
 
 // A fully custom tab bar (passed via <Tab.Navigator tabBar={...}>) instead of
