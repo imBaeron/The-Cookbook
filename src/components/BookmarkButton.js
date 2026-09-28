@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
 
 // Controlled component: `saved` and `onToggle` come from whichever store
-// the parent screen reads (useBookmarksStore), so this button always
+// the parent screen reads (useAppStore), so this button always
 // reflects real state instead of guessing with its own internal useState.
 export default function BookmarkButton({ saved, onToggle, size = 22, style }) {
   return (

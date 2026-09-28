@@ -4,13 +4,13 @@ import { colors } from '../../constants/colors';
 import { typography, spacing } from '../../constants/theme';
 import RecipeCard from '../../components/RecipeCard';
 import { searchByName, searchByIngredients } from '../../data/recipeRepository';
-import { useBookmarksStore } from '../../store/useBookmarksStore';
+import { useAppStore } from '../../store/useAppStore';
 
 export default function SearchResultsScreen({ route, navigation }) {
   const { query = '', mode = 'name' } = route.params ?? {};
   const [results, setResults] = useState([]);
-  const bookmarkedIds = useBookmarksStore((s) => s.bookmarkedIds);
-  const toggleBookmark = useBookmarksStore((s) => s.toggleBookmark);
+  const bookmarkedIds = useAppStore((s) => s.bookmarkedIds);
+  const toggleBookmark = useAppStore((s) => s.toggleBookmark);
 
   useEffect(() => {
     const run =

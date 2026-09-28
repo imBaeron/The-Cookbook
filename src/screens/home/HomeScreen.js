@@ -1,39 +1,35 @@
-import { useState, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
-import { typography, spacing, radius } from '../../constants/theme';
+import { typography, spacing } from '../../constants/theme';
 import SearchBar from '../../components/SearchBar';
 import RecipeCard from '../../components/RecipeCard';
 import { getRandomRecipes } from '../../data/recipeRepository';
-import { useBookmarksStore } from '../../store/useBookmarksStore';
+import { useAppStore } from '../../store/useAppStore';
 
 export default function HomeScreen({ navigation }) {
   const [query, setQuery] = useState('');
   const [mode, setMode] = useState('name');
   const [picks, setPicks] = useState([]);
-  const bookmarkedIds = useBookmarksStore((s) => s.bookmarkedIds);
-  const toggleBookmark = useBookmarksStore((s) => s.toggleBookmark);
+  const bookmarkedIds = useAppStore((s) => s.bookmarkedIds);
+  const toggleBookmark = useAppStore((s) => s.toggleBookmark);
 
-  const loadPicks = useCallback(() => {
+  // Pick 4 random recipes once, when the screen first loads.
+  useEffect(() => {
     getRandomRecipes(4).then(setPicks);
   }, []);
 
-  // Re-shuffle each time Home comes into focus (e.g. after backing out of a recipe)
-  useFocusEffect(
-    useCallback(() => {
-      loadPicks();
-    }, [loadPicks])
-  );
+  const handleShuffle = () => {
+    getRandomRecipes(4).then(setPicks);
+  };
 
   const handleSubmit = () => {
     navigation.navigate('SearchResults', { query, mode });
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
       <FlatList
         data={picks}
         keyExtractor={(item) => String(item.id)}
@@ -52,7 +48,7 @@ export default function HomeScreen({ navigation }) {
             />
             <View style={styles.pickHeaderRow}>
               <Text style={typography.sectionTitle}>Today's picks</Text>
-              <TouchableOpacity style={styles.shuffleButton} onPress={loadPicks}>
+              <TouchableOpacity style={styles.shuffleButton} onPress={handleShuffle}>
                 <Ionicons name="shuffle" size={16} color={colors.sage} />
                 <Text style={styles.shuffleText}>Shuffle</Text>
               </TouchableOpacity>
@@ -71,7 +67,7 @@ export default function HomeScreen({ navigation }) {
         )}
         contentContainerStyle={styles.listContent}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 

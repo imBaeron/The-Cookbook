@@ -2,14 +2,14 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
 import { typography, spacing, radius } from '../../constants/theme';
-import { useShoppingListStore } from '../../store/useShoppingListStore';
+import { useAppStore } from '../../store/useAppStore';
 
 export default function ShoppingListScreen() {
-  const items = useShoppingListStore((s) => s.items);
-  const toggleChecked = useShoppingListStore((s) => s.toggleChecked);
-  const removeItem = useShoppingListStore((s) => s.removeItem);
-  const clearChecked = useShoppingListStore((s) => s.clearChecked);
-  const clearAll = useShoppingListStore((s) => s.clearAll);
+  const items = useAppStore((s) => s.shoppingListItems);
+  const toggleChecked = useAppStore((s) => s.toggleItemChecked);
+  const removeItem = useAppStore((s) => s.removeItem);
+  const clearChecked = useAppStore((s) => s.clearCheckedItems);
+  const clearAll = useAppStore((s) => s.clearAllItems);
 
   const checkedCount = items.filter((i) => i.checked).length;
 

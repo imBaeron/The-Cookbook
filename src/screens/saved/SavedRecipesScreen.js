@@ -1,25 +1,24 @@
-import { useEffect, useState, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useEffect, useState } from 'react';
 import { View, StyleSheet, FlatList, Text } from 'react-native';
 import { colors } from '../../constants/colors';
 import { typography, spacing } from '../../constants/theme';
 import RecipeCard from '../../components/RecipeCard';
 import { getRecipeById } from '../../data/recipeRepository';
-import { useBookmarksStore } from '../../store/useBookmarksStore';
+import { useAppStore } from '../../store/useAppStore';
 
 export default function SavedRecipesScreen({ navigation }) {
-  const bookmarkedIds = useBookmarksStore((s) => s.bookmarkedIds);
-  const toggleBookmark = useBookmarksStore((s) => s.toggleBookmark);
+  const bookmarkedIds = useAppStore((s) => s.bookmarkedIds);
+  const toggleBookmark = useAppStore((s) => s.toggleBookmark);
   const [savedRecipes, setSavedRecipes] = useState([]);
 
-  const loadSaved = useCallback(() => {
+  // Re-fetch the full recipe details whenever the list of bookmarked IDs
+  // changes (this runs on every screen, since they all share the same store —
+  // no need to also refresh "on focus").
+  useEffect(() => {
     Promise.all(bookmarkedIds.map((id) => getRecipeById(id))).then((results) =>
       setSavedRecipes(results.filter(Boolean))
     );
   }, [bookmarkedIds]);
-
-  useEffect(loadSaved, [loadSaved]);
-  useFocusEffect(loadSaved);
 
   return (
     <View style={styles.container}>

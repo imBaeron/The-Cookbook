@@ -5,16 +5,15 @@ import { colors } from '../../constants/colors';
 import { typography, spacing, radius } from '../../constants/theme';
 import BookmarkButton from '../../components/BookmarkButton';
 import { getRecipeById } from '../../data/recipeRepository';
-import { useBookmarksStore } from '../../store/useBookmarksStore';
-import { useShoppingListStore } from '../../store/useShoppingListStore';
+import { useAppStore } from '../../store/useAppStore';
 
 export default function RecipeDetailScreen({ route, navigation }) {
   const { recipeId } = route.params ?? {};
   const [recipe, setRecipe] = useState(null);
 
-  const bookmarkedIds = useBookmarksStore((s) => s.bookmarkedIds);
-  const toggleBookmark = useBookmarksStore((s) => s.toggleBookmark);
-  const addIngredientsFromRecipe = useShoppingListStore((s) => s.addIngredientsFromRecipe);
+  const bookmarkedIds = useAppStore((s) => s.bookmarkedIds);
+  const toggleBookmark = useAppStore((s) => s.toggleBookmark);
+  const addIngredientsFromRecipe = useAppStore((s) => s.addIngredientsFromRecipe);
 
   useEffect(() => {
     getRecipeById(recipeId).then((r) => {
