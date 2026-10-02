@@ -1,7 +1,12 @@
-// Hardcoded prototype data. Shaped exactly like what recipeService.js
-// (the real Spoonacular version, built earlier) returns, so swapping the
-// data source later means editing recipeRepository.js only — no screen
-// or component needs to change.
+// The app's hardcoded "database": 8 recipes with full ingredients and
+// step-by-step instructions. "Mock" data means fake/placeholder data used
+// in place of a real backend. Nothing outside recipeRepository.js should
+// import this file directly — screens always go through the repository
+// functions instead (see data/recipeRepository.js for why).
+//
+// Shaped exactly like what a real Spoonacular API response would look like,
+// so swapping the data source later means editing recipeRepository.js only
+// — no screen or component needs to change.
 export const recipes = [
   {
     id: 1,

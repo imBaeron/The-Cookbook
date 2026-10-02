@@ -1,3 +1,6 @@
+// The full recipe view: photo, meta info, diet tags, ingredients, steps,
+// bookmark button, and "Add to Shopping List". Opened from a RecipeCard's
+// onPress on Home, Search Results, or Saved.
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,20 +11,34 @@ import { getRecipeById } from '../../data/recipeRepository';
 import { useAppStore } from '../../store/useAppStore';
 
 export default function RecipeDetailScreen({ route, navigation }) {
+  // Only recipeId is passed in (not the whole recipe object) — this screen
+  // looks up the full details itself via getRecipeById. Keeping params
+  // small like this is cleaner than passing a big object through navigation.
   const { recipeId } = route.params ?? {};
   const [recipe, setRecipe] = useState(null);
 
+  // All hooks are called at the TOP of the component, before any
+  // conditional `return` below. This is a strict rule in React — hooks
+  // must run in the exact same order on every render, so none of them can
+  // be inside an `if` or after an early return.
   const bookmarkedIds = useAppStore((s) => s.bookmarkedIds);
   const toggleBookmark = useAppStore((s) => s.toggleBookmark);
   const addIngredientsFromRecipe = useAppStore((s) => s.addIngredientsFromRecipe);
 
+  // Re-fetch if a different recipeId is opened (e.g. tapping a different
+  // card while this screen type is already on the stack).
   useEffect(() => {
     getRecipeById(recipeId).then((r) => {
       setRecipe(r);
+      // The header's title isn't known until the recipe loads, so it
+      // starts blank (see RecipeStackNavigator) and gets set here once we
+      // actually have the title.
       navigation.setOptions({ title: r?.title ?? '' });
     });
   }, [recipeId]);
 
+  // Before the fetch finishes, `recipe` is still null — show a fallback
+  // instead of crashing on recipe.title etc. below.
   if (!recipe) {
     return (
       <View style={styles.container}>
@@ -39,6 +56,8 @@ export default function RecipeDetailScreen({ route, navigation }) {
   };
 
   return (
+    // ScrollView (not FlatList) because this is one fixed block of content,
+    // not a long scrolling list of many similar rows.
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.imagePlaceholder}>
         <Ionicons name="restaurant-outline" size={40} color={colors.inkFaint} />
@@ -76,6 +95,7 @@ export default function RecipeDetailScreen({ route, navigation }) {
       <Text style={[typography.sectionTitle, { marginTop: spacing.xl, marginBottom: spacing.sm }]}>
         Ingredients
       </Text>
+      {/* .map turns the ingredients array into one row per ingredient. */}
       {recipe.ingredients.map((ing) => (
         <View key={`${ing.name}-${ing.unit}`} style={styles.ingredientRow}>
           <View style={styles.bullet} />
@@ -88,6 +108,8 @@ export default function RecipeDetailScreen({ route, navigation }) {
       <Text style={[typography.sectionTitle, { marginTop: spacing.xl, marginBottom: spacing.sm }]}>
         Instructions
       </Text>
+      {/* index is available as the 2nd argument to .map — used here both as
+          the key and to display "1.", "2." etc. */}
       {recipe.steps.map((step, index) => (
         <View key={index} style={styles.stepRow}>
           <View style={styles.stepNumber}>
@@ -100,6 +122,8 @@ export default function RecipeDetailScreen({ route, navigation }) {
   );
 }
 
+// A small local component for one row of meta info (time/servings/health).
+// Avoids repeating the same Ionicons+Text layout 3 times above.
 function MetaItem({ icon, label }) {
   return (
     <View style={styles.metaItem}>
@@ -118,6 +142,8 @@ function getTags(recipe) {
   return tags;
 }
 
+// Shows "1.5" but also turns something like 1.00 into just "1" — avoids
+// awkward ingredient amounts like "1.00 cup garlic".
 function formatAmount(amount) {
   return Number.isInteger(amount) ? amount : amount.toFixed(2).replace(/\.?0+$/, '');
 }
@@ -159,7 +185,7 @@ const styles = StyleSheet.create({
   bullet: {
     width: 6,
     height: 6,
-    borderRadius: 3,
+    borderRadius: 3, // half the width/height = a perfect circle
     backgroundColor: colors.sage,
     marginRight: spacing.sm,
   },
@@ -175,5 +201,5 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   stepNumberText: { color: colors.paper, fontSize: 12, fontFamily: typography.label.fontFamily },
-  stepText: { flex: 1 },
+  stepText: { flex: 1 }, // lets the step text wrap onto multiple lines instead of overflowing
 });

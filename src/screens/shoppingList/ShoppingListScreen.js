@@ -1,3 +1,5 @@
+// Shows the checkable shopping list, built up from "Add to Shopping List"
+// taps on various recipes. Another top-level bottom-tab screen.
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
@@ -15,6 +17,7 @@ export default function ShoppingListScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Only show the Clear buttons when there's actually something on the list. */}
       {items.length > 0 && (
         <View style={styles.actionsRow}>
           <TouchableOpacity onPress={clearChecked} disabled={checkedCount === 0}>
@@ -30,7 +33,7 @@ export default function ShoppingListScreen() {
 
       <FlatList
         data={items}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id} // already a unique string (see ingredientMerge.js)
         contentContainerStyle={styles.body}
         ListEmptyComponent={
           <Text style={typography.bodyMuted}>
@@ -39,6 +42,8 @@ export default function ShoppingListScreen() {
         }
         renderItem={({ item }) => (
           <View style={styles.row}>
+            {/* The checkbox + text are one tappable area; the trash icon
+                on the right is a separate, smaller tappable area. */}
             <TouchableOpacity
               style={styles.rowMain}
               onPress={() => toggleChecked(item.id)}
@@ -76,7 +81,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingBottom: spacing.sm,
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-end', // pushes both buttons to the right edge
     gap: spacing.md,
   },
   actionText: { color: colors.paprika, fontFamily: typography.label.fontFamily, fontSize: 12 },
@@ -85,7 +90,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'space-between', // checkbox/text on the left, trash icon on the right
     backgroundColor: colors.white,
     borderRadius: radius.md,
     borderWidth: 1,

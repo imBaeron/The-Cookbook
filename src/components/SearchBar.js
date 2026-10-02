@@ -1,3 +1,7 @@
+// The search input + the "By Name" / "By Ingredients" toggle. Used only on
+// HomeScreen. This is also a controlled component: HomeScreen owns the
+// actual text/mode values (query, mode) and passes them in as props, along
+// with the setter functions to call when they change.
 import { View, TextInput, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../constants/colors';
@@ -17,6 +21,7 @@ export default function SearchBar({
 
   return (
     <View>
+      {/* The two pill-shaped toggle buttons */}
       <View style={styles.modeToggle}>
         <ModeButton label="By Name" active={mode === 'name'} onPress={() => onModeChange?.('name')} />
         <ModeButton
@@ -34,17 +39,22 @@ export default function SearchBar({
           onChangeText={onChangeText}
           placeholder={placeholder ?? defaultPlaceholder}
           placeholderTextColor={colors.inkFaint}
-          returnKeyType="search"
-          onSubmitEditing={onSubmit}
+          returnKeyType="search" // changes the keyboard's return key to say "search"
+          onSubmitEditing={onSubmit} // fires when the user taps that return key
         />
       </View>
     </View>
   );
 }
 
+// A small local component used only inside this file, for the two toggle
+// buttons. Keeping it here (instead of a separate file) is fine since
+// nothing else needs it.
 function ModeButton({ label, active, onPress }) {
   return (
     <TouchableOpacity
+      // style={[a, condition && b]} applies style `a` always, and style `b`
+      // only when `condition` is true (React Native ignores `false`).
       style={[styles.modeButton, active && styles.modeButtonActive]}
       onPress={onPress}
       activeOpacity={0.8}
@@ -56,7 +66,7 @@ function ModeButton({ label, active, onPress }) {
 
 const styles = StyleSheet.create({
   modeToggle: {
-    flexDirection: 'row',
+    flexDirection: 'row', // side by side instead of the default stacked
     marginBottom: spacing.sm,
     gap: spacing.sm,
   },
@@ -77,7 +87,7 @@ const styles = StyleSheet.create({
   },
   searchRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'center', // vertically centers the icon with the text input
     backgroundColor: colors.white,
     borderWidth: 1,
     borderColor: colors.border,
@@ -86,7 +96,7 @@ const styles = StyleSheet.create({
   },
   icon: { marginRight: spacing.sm },
   input: {
-    flex: 1,
+    flex: 1, // takes up all remaining space in the row, pushing nothing else out
     paddingVertical: 12,
     fontFamily: typography.body.fontFamily,
     fontSize: typography.body.fontSize,

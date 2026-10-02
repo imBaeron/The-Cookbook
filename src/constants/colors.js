@@ -1,3 +1,6 @@
+// The app's full color palette, in one place. Every screen and component
+// imports colors from here instead of typing hex codes directly — change
+// a value here and it updates everywhere that color is used.
 // Cookbook-inspired palette. Keep accents to sage + paprika only —
 // don't introduce new colors ad hoc in screens/components.
 export const colors = {

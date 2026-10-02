@@ -1,3 +1,7 @@
+// The TOP-LEVEL navigator: the bottom tab bar with 3 tabs. This is what
+// App.js renders directly. A TAB navigator shows tabs at the bottom and
+// swaps the ENTIRE screen when you tap a different one (unlike a stack,
+// where screens pile on top of each other).
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import RecipeStackNavigator from './RecipeStackNavigator';
@@ -8,6 +12,8 @@ import { fonts, headerAppearance } from '../constants/theme';
 
 const Tab = createBottomTabNavigator();
 
+// Which Ionicons name to use per tab. The "-outline" version (added below)
+// is used when a tab isn't the currently selected one.
 const ICONS = {
   RecipeStack: 'book',
   Saved: 'bookmark',
@@ -17,7 +23,12 @@ const ICONS = {
 export default function MainTabNavigator() {
   return (
     <Tab.Navigator
+      // screenOptions as a FUNCTION (instead of a plain object) gives us
+      // `route`, so we can look up the right icon per tab below.
       screenOptions={({ route }) => ({
+        // The Cookbook tab's header is hidden here because its own nested
+        // stack (RecipeStackNavigator) already shows a header per screen —
+        // showing both would stack two headers on top of each other.
         headerShown: false,
         tabBarActiveTintColor: colors.paprikaLight,
         tabBarInactiveTintColor: colors.inkFaint,
@@ -36,6 +47,9 @@ export default function MainTabNavigator() {
       })}
     >
       <Tab.Screen name="RecipeStack" component={RecipeStackNavigator} options={{ title: 'Cookbook' }} />
+      {/* Saved and Shopping List each get their own real header here
+          (headerShown: true), using the same shared headerAppearance style
+          as the recipe stack, so every screen in the app looks consistent. */}
       <Tab.Screen
         name="Saved"
         component={SavedRecipesScreen}

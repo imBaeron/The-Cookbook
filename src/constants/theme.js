@@ -1,6 +1,11 @@
+// "Design tokens": shared values for fonts, spacing, rounded corners, and
+// text styles, used across every screen/component. This is how the app
+// stays visually consistent — nobody types a raw font size or padding
+// number directly in a screen, they reference a name from here instead.
 import { colors } from './colors';
 
-// Font family keys — must match the keys used when loading fonts in App.js
+// Font family keys — must match the keys used when loading fonts in App.js.
+// React Native identifies a loaded custom font by this exact string name.
 export const fonts = {
   serif: 'Fraunces_600SemiBold',
   serifItalic: 'Fraunces_500Medium_Italic',
@@ -9,6 +14,9 @@ export const fonts = {
   sansSemiBold: 'LibreFranklin_600SemiBold',
 };
 
+// A spacing scale instead of random numbers. Using spacing.md everywhere
+// (rather than 16 typed out repeatedly) means changing this one number
+// adjusts padding/margins across the whole app consistently.
 export const spacing = {
   xs: 4,
   sm: 8,
@@ -18,6 +26,9 @@ export const spacing = {
   xxl: 48,
 };
 
+// Corner roundness scale. radius.pill (999) is intentionally huge — on a
+// short/narrow element that makes the corners as round as possible,
+// producing a fully rounded "pill" shape (used for buttons, tags, search bar).
 export const radius = {
   sm: 6,
   md: 12,
@@ -25,6 +36,8 @@ export const radius = {
   pill: 999,
 };
 
+// Pre-built text styles. Instead of repeating { fontFamily, fontSize, color }
+// on every <Text>, a screen does style={typography.screenTitle}.
 export const typography = {
   screenTitle: {
     fontFamily: fonts.serif,

@@ -1,3 +1,7 @@
+// Shows search results, reached by submitting the search bar on Home.
+// Registered inside RecipeStackNavigator, so it has a back button to Home
+// automatically (React Navigation adds that for any screen that isn't
+// first in its stack).
 import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList } from 'react-native';
 import { colors } from '../../constants/colors';
@@ -7,11 +11,18 @@ import { searchByName, searchByIngredients } from '../../data/recipeRepository';
 import { useAppStore } from '../../store/useAppStore';
 
 export default function SearchResultsScreen({ route, navigation }) {
+  // route.params holds whatever HomeScreen passed in via navigation.navigate.
+  // The ?? {} fallback and = '' / = 'name' defaults mean this won't crash
+  // even if this screen was somehow opened with no params at all.
   const { query = '', mode = 'name' } = route.params ?? {};
   const [results, setResults] = useState([]);
   const bookmarkedIds = useAppStore((s) => s.bookmarkedIds);
   const toggleBookmark = useAppStore((s) => s.toggleBookmark);
 
+  // Re-run the search whenever query or mode changes — which happens every
+  // time this screen is opened fresh with new params (navigating here again
+  // with a different search updates route.params, which updates query/mode,
+  // which re-triggers this effect).
   useEffect(() => {
     const run =
       mode === 'ingredients'
@@ -33,6 +44,8 @@ export default function SearchResultsScreen({ route, navigation }) {
               : 'All recipes'}
           </Text>
         }
+        // Shown automatically by FlatList instead of renderItem when
+        // `data` is an empty array.
         ListEmptyComponent={
           <Text style={[typography.bodyMuted, { marginTop: spacing.lg }]}>
             No recipes match that search. Try a different term.
