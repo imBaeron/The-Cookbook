@@ -34,7 +34,7 @@ export default function ShoppingListScreen() {
       <FlatList
         data={items}
         keyExtractor={(item) => item.id} // already a unique string (see ingredientMerge.js)
-        contentContainerStyle={styles.body}
+        contentContainerStyle={[styles.body, items.length === 0 && styles.emptyBody,]}
         ListEmptyComponent={
           <Text style={typography.bodyMuted}>
             Your list is empty. Open a recipe and tap "Add to Shopping List" to add ingredients here.
@@ -86,7 +86,13 @@ const styles = StyleSheet.create({
   },
   actionText: { color: colors.paprika, fontFamily: typography.label.fontFamily, fontSize: 12 },
   actionTextDisabled: { color: colors.inkFaint },
-  body: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxl },
+  body: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xxl,
+  },
+  emptyBody: {
+    paddingTop: spacing.lg,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
