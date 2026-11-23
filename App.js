@@ -20,10 +20,12 @@ import {
 
 import MainTabNavigator from './src/navigation/MainTabNavigator';
 import { colors } from './src/constants/colors';
+import { useAppStore } from './src/store/useAppStore';
 
 // Tell the OS "don't auto-hide the splash screen" — we'll hide it ourselves,
-// manually, once fonts are ready. Without this, the splash could disappear
-// before fonts finish loading, showing text in the wrong font for a flash.
+// manually, once fonts AND saved data are ready. Without this, the splash
+// could disappear too early: text would flash in the wrong font, and the
+// Saved/Shopping tabs would flash empty before the saved data finished loading.
 SplashScreen.preventAutoHideAsync();
 
 export default function App() {
@@ -38,18 +40,25 @@ export default function App() {
     LibreFranklin_600SemiBold,
   });
 
+  // Has the store finished loading the bookmarks and shopping list that were
+  // saved on the phone last time? (See _hasHydrated in store/useAppStore.js.)
+  const storeLoaded = useAppStore((s) => s._hasHydrated);
+
+  // The app is ready only when BOTH are done.
+  const appReady = fontsLoaded && storeLoaded;
+
   // useEffect = "run this code after rendering, when something changes."
-  // Dependency array [fontsLoaded] means: run again whenever fontsLoaded
-  // changes. The moment it flips to true, we hide the splash screen.
+  // Dependency array [appReady] means: run again whenever appReady changes.
+  // The moment it flips to true, we hide the splash screen.
   useEffect(() => {
-    if (fontsLoaded) {
+    if (appReady) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [appReady]);
 
-  // While fonts are still loading, render nothing (the splash screen is
-  // still covering everything anyway, so this is invisible to the user).
-  if (!fontsLoaded) {
+  // While still loading, render nothing (the splash screen is still covering
+  // everything anyway, so this is invisible to the user).
+  if (!appReady) {
     return null;
   }
 

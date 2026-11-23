@@ -27,7 +27,7 @@ export default function RecipeDetailScreen({ route, navigation }) {
   // conditional `return` below. This is a strict rule in React — hooks
   // must run in the exact same order on every render, so none of them can
   // be inside an `if` or after an early return.
-  const bookmarkedIds = useAppStore((s) => s.bookmarkedIds);
+  const bookmarks = useAppStore((s) => s.bookmarks);
   const toggleBookmark = useAppStore((s) => s.toggleBookmark);
   const addIngredientsFromRecipe = useAppStore((s) => s.addIngredientsFromRecipe);
 
@@ -85,7 +85,7 @@ export default function RecipeDetailScreen({ route, navigation }) {
   }
 
   const tags = getTags(recipe);
-  const saved = bookmarkedIds.includes(recipe.id);
+  const saved = bookmarks.some((b) => b.id === recipe.id);
 
   const handleAddToShoppingList = () => {
     addIngredientsFromRecipe(recipe);
@@ -105,7 +105,7 @@ export default function RecipeDetailScreen({ route, navigation }) {
         )}
         <BookmarkButton
           saved={saved}
-          onToggle={() => toggleBookmark(recipe.id)}
+          onToggle={() => toggleBookmark(recipe)}
           size={24}
           style={styles.bookmarkOverlay}
         />

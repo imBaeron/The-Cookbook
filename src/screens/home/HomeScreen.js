@@ -31,7 +31,7 @@ export default function HomeScreen({ navigation }) {
 
   // Shared state — read from useAppStore so the bookmark icon on every
   // card here matches what's actually saved, kept in sync across screens.
-  const bookmarkedIds = useAppStore((s) => s.bookmarkedIds);
+  const bookmarks = useAppStore((s) => s.bookmarks);
   const toggleBookmark = useAppStore((s) => s.toggleBookmark);
 
   // Fetches 4 random recipes. Used by the first load, the Shuffle button, and
@@ -119,8 +119,8 @@ export default function HomeScreen({ navigation }) {
           <View style={styles.cardWrap}>
             <RecipeCard
               recipe={item}
-              saved={bookmarkedIds.includes(item.id)}
-              onToggleSave={() => toggleBookmark(item.id)}
+              saved={bookmarks.some((b) => b.id === item.id)}
+              onToggleSave={() => toggleBookmark(item)}
               onPress={() => navigation.navigate('RecipeDetail', { recipeId: item.id })}
             />
           </View>

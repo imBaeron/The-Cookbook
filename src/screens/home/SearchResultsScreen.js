@@ -26,7 +26,7 @@ export default function SearchResultsScreen({ route, navigation }) {
   // effect's dependency list below, changing it re-runs the search.
   const [attempt, setAttempt] = useState(0);
 
-  const bookmarkedIds = useAppStore((s) => s.bookmarkedIds);
+  const bookmarks = useAppStore((s) => s.bookmarks);
   const toggleBookmark = useAppStore((s) => s.toggleBookmark);
 
   // Run the search whenever query or mode changes (or on a retry).
@@ -93,8 +93,8 @@ export default function SearchResultsScreen({ route, navigation }) {
         renderItem={({ item }) => (
           <RecipeCard
             recipe={item}
-            saved={bookmarkedIds.includes(item.id)}
-            onToggleSave={() => toggleBookmark(item.id)}
+            saved={bookmarks.some((b) => b.id === item.id)}
+            onToggleSave={() => toggleBookmark(item)}
             onPress={() => navigation.navigate('RecipeDetail', { recipeId: item.id })}
           />
         )}
