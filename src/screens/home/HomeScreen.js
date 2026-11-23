@@ -8,6 +8,9 @@ import { colors } from '../../constants/colors';
 import { typography, spacing } from '../../constants/theme';
 import SearchBar from '../../components/SearchBar';
 import RecipeCard from '../../components/RecipeCard';
+import LoadingView from '../../components/LoadingView';
+import ErrorView from '../../components/ErrorView';
+import PoweredBy from '../../components/PoweredBy';
 import { getRandomRecipes } from '../../data/recipeRepository';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -21,24 +24,33 @@ export default function HomeScreen({ navigation }) {
   const [mode, setMode] = useState('name');
   const [picks, setPicks] = useState([]);
 
+  // Anything that loads from the internet can be in one of three situations,
+  // so we track two extra things: are we waiting (loading)? did it fail (error)?
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   // Shared state — read from useAppStore so the bookmark icon on every
   // card here matches what's actually saved, kept in sync across screens.
   const bookmarkedIds = useAppStore((s) => s.bookmarkedIds);
   const toggleBookmark = useAppStore((s) => s.toggleBookmark);
 
-  // Pick 4 random recipes once, when the screen first loads. The empty
-  // dependency array [] means "run only once, right after the first render"
-  // — without it, calling setPicks here would trigger a re-render, which
-  // would run this code again, forever (an infinite loop).
-  useEffect(() => {
-    getRandomRecipes(4).then(setPicks);
-  }, []);
+  // Fetches 4 random recipes. Used by the first load, the Shuffle button, and
+  // the "Try again" button, so the loading/error handling lives in one place.
+  function loadPicks() {
+    setLoading(true);
+    setError(null);
+    getRandomRecipes(4)
+      .then(setPicks) // success: show the recipes
+      .catch(setError) // failure: remember the error so we can display it
+      .finally(() => setLoading(false)); // either way, we're done waiting
+  }
 
-  // Re-runs the same random pick, triggered by the Shuffle button instead
-  // of automatically.
-  const handleShuffle = () => {
-    getRandomRecipes(4).then(setPicks);
-  };
+  // Load once, when the screen first appears. The empty dependency array []
+  // means "run only once, right after the first render" — without it,
+  // setting state in here would re-render, run this again, and loop forever.
+  useEffect(() => {
+    loadPicks();
+  }, []);
 
   // Navigates to the Search Results screen, passing the current query/mode
   // along as params so that screen knows what to search for.
@@ -72,13 +84,36 @@ export default function HomeScreen({ navigation }) {
             />
             <View style={styles.pickHeaderRow}>
               <Text style={typography.sectionTitle}>Today's picks</Text>
-              <TouchableOpacity style={styles.shuffleButton} onPress={handleShuffle}>
-                <Ionicons name="shuffle" size={16} color={colors.sage} />
-                <Text style={styles.shuffleText}>Shuffle</Text>
+              {/* Disabled while loading so a double tap can't fire two
+                  requests (each one costs API points). */}
+              <TouchableOpacity
+                style={styles.shuffleButton}
+                onPress={loadPicks}
+                disabled={loading}
+              >
+                <Ionicons name="shuffle" size={16} color={loading ? colors.inkFaint : colors.sage} />
+                <Text style={[styles.shuffleText, loading && { color: colors.inkFaint }]}>
+                  {loading ? 'Loading…' : 'Shuffle'}
+                </Text>
               </TouchableOpacity>
             </View>
+            {/* If a Shuffle fails but we still have recipes on screen, keep
+                them and just mention the problem here. */}
+            {error && picks.length > 0 && (
+              <Text style={[typography.bodyMuted, styles.inlineError]}>{error.userMessage}</Text>
+            )}
           </View>
         }
+        // FlatList shows this instead of rows when `data` is empty — here
+        // that means "still loading" or "loading failed".
+        ListEmptyComponent={
+          loading ? (
+            <LoadingView label="Finding recipes…" />
+          ) : error ? (
+            <ErrorView message={error.userMessage} onRetry={loadPicks} />
+          ) : null
+        }
+        ListFooterComponent={picks.length > 0 ? <PoweredBy /> : null}
         // Called once per item in `picks` to build each row.
         renderItem={({ item }) => (
           <View style={styles.cardWrap}>
@@ -110,6 +145,7 @@ const styles = StyleSheet.create({
   },
   shuffleButton: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   shuffleText: { color: colors.sage, fontFamily: typography.label.fontFamily, fontSize: 13 },
+  inlineError: { color: colors.paprika, marginBottom: spacing.md },
   cardWrap: { paddingHorizontal: spacing.lg },
   listContent: { paddingBottom: spacing.xxl }, // extra space below the last card
 });

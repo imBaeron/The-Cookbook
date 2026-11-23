@@ -2,11 +2,14 @@
 // bookmark button, and "Add to Shopping List". Opened from a RecipeCard's
 // onPress on Home, Search Results, or Saved.
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
 import { typography, spacing, radius } from '../../constants/theme';
 import BookmarkButton from '../../components/BookmarkButton';
+import LoadingView from '../../components/LoadingView';
+import ErrorView from '../../components/ErrorView';
+import PoweredBy from '../../components/PoweredBy';
 import { getRecipeById } from '../../data/recipeRepository';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -16,6 +19,9 @@ export default function RecipeDetailScreen({ route, navigation }) {
   // small like this is cleaner than passing a big object through navigation.
   const { recipeId } = route.params ?? {};
   const [recipe, setRecipe] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [attempt, setAttempt] = useState(0); // +1 on "Try again" to re-run the effect
 
   // All hooks are called at the TOP of the component, before any
   // conditional `return` below. This is a strict rule in React — hooks
@@ -25,24 +31,55 @@ export default function RecipeDetailScreen({ route, navigation }) {
   const toggleBookmark = useAppStore((s) => s.toggleBookmark);
   const addIngredientsFromRecipe = useAppStore((s) => s.addIngredientsFromRecipe);
 
-  // Re-fetch if a different recipeId is opened (e.g. tapping a different
-  // card while this screen type is already on the stack).
+  // Load the recipe. Re-runs if a different recipeId is opened, or on retry.
   useEffect(() => {
-    getRecipeById(recipeId).then((r) => {
-      setRecipe(r);
-      // The header's title isn't known until the recipe loads, so it
-      // starts blank (see RecipeStackNavigator) and gets set here once we
-      // actually have the title.
-      navigation.setOptions({ title: r?.title ?? '' });
-    });
-  }, [recipeId]);
+    let ignore = false; // see SearchResultsScreen for why this guard exists
 
-  // Before the fetch finishes, `recipe` is still null — show a fallback
-  // instead of crashing on recipe.title etc. below.
+    setLoading(true);
+    setError(null);
+
+    getRecipeById(recipeId)
+      .then((r) => {
+        if (ignore) return;
+        setRecipe(r);
+        // The header's title isn't known until the recipe loads, so it
+        // starts blank (see RecipeStackNavigator) and gets set here once we
+        // actually have the title.
+        navigation.setOptions({ title: r?.title ?? '' });
+      })
+      .catch((err) => {
+        if (!ignore) setError(err);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [recipeId, attempt]);
+
+  // Three early exits, in order: still loading, failed, or not found.
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <LoadingView label="Loading recipe…" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <ErrorView message={error.userMessage} onRetry={() => setAttempt((n) => n + 1)} />
+      </View>
+    );
+  }
+
   if (!recipe) {
     return (
       <View style={styles.container}>
-        <Text style={typography.bodyMuted}>Recipe not found.</Text>
+        <ErrorView message="That recipe couldn't be found." />
       </View>
     );
   }
@@ -59,8 +96,13 @@ export default function RecipeDetailScreen({ route, navigation }) {
     // ScrollView (not FlatList) because this is one fixed block of content,
     // not a long scrolling list of many similar rows.
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.imagePlaceholder}>
-        <Ionicons name="restaurant-outline" size={40} color={colors.inkFaint} />
+      <View style={styles.imageWrap}>
+        {/* Real photo when the recipe has one, placeholder icon otherwise. */}
+        {recipe.image ? (
+          <Image source={{ uri: recipe.image }} style={styles.image} resizeMode="cover" />
+        ) : (
+          <Ionicons name="restaurant-outline" size={40} color={colors.inkFaint} />
+        )}
         <BookmarkButton
           saved={saved}
           onToggle={() => toggleBookmark(recipe.id)}
@@ -71,10 +113,17 @@ export default function RecipeDetailScreen({ route, navigation }) {
 
       <Text style={[typography.screenTitle, { marginTop: spacing.lg }]}>{recipe.title}</Text>
 
+      {/* Each item is only shown if the data actually exists. */}
       <View style={styles.metaRow}>
-        <MetaItem icon="time-outline" label={`${recipe.readyInMinutes} min`} />
-        <MetaItem icon="people-outline" label={`${recipe.servings} servings`} />
-        <MetaItem icon="pulse-outline" label={`Health score ${recipe.healthScore}`} />
+        {recipe.readyInMinutes != null && (
+          <MetaItem icon="time-outline" label={`${recipe.readyInMinutes} min`} />
+        )}
+        {recipe.servings != null && (
+          <MetaItem icon="people-outline" label={`${recipe.servings} servings`} />
+        )}
+        {recipe.healthScore != null && (
+          <MetaItem icon="pulse-outline" label={`Health score ${recipe.healthScore}`} />
+        )}
       </View>
 
       {tags.length > 0 && (
@@ -95,9 +144,11 @@ export default function RecipeDetailScreen({ route, navigation }) {
       <Text style={[typography.sectionTitle, { marginTop: spacing.xl, marginBottom: spacing.sm }]}>
         Ingredients
       </Text>
-      {/* .map turns the ingredients array into one row per ingredient. */}
-      {recipe.ingredients.map((ing) => (
-        <View key={`${ing.name}-${ing.unit}`} style={styles.ingredientRow}>
+      {/* .map turns the ingredients array into one row per ingredient.
+          The key includes the index because a real recipe can list the same
+          ingredient twice (e.g. butter for the sauce and butter for the pan). */}
+      {recipe.ingredients.map((ing, index) => (
+        <View key={`${ing.name}-${index}`} style={styles.ingredientRow}>
           <View style={styles.bullet} />
           <Text style={typography.body}>
             {formatAmount(ing.amount)} {ing.unit} {ing.name}
@@ -108,6 +159,10 @@ export default function RecipeDetailScreen({ route, navigation }) {
       <Text style={[typography.sectionTitle, { marginTop: spacing.xl, marginBottom: spacing.sm }]}>
         Instructions
       </Text>
+      {/* Some recipes have no written steps — say so instead of leaving a gap. */}
+      {recipe.steps.length === 0 && (
+        <Text style={typography.bodyMuted}>No instructions were provided for this recipe.</Text>
+      )}
       {/* index is available as the 2nd argument to .map — used here both as
           the key and to display "1.", "2." etc. */}
       {recipe.steps.map((step, index) => (
@@ -118,6 +173,8 @@ export default function RecipeDetailScreen({ route, navigation }) {
           <Text style={[typography.body, styles.stepText]}>{step}</Text>
         </View>
       ))}
+
+      <PoweredBy />
     </ScrollView>
   );
 }
@@ -151,7 +208,7 @@ function formatAmount(amount) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.paper },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl },
-  imagePlaceholder: {
+  imageWrap: {
     height: 180,
     backgroundColor: colors.paperDark,
     borderRadius: radius.md,
@@ -159,9 +216,11 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden', // clips the photo to the rounded corners
   },
+  image: { width: '100%', height: '100%' },
   bookmarkOverlay: { position: 'absolute', top: spacing.sm, right: spacing.sm },
-  metaRow: { flexDirection: 'row', gap: spacing.lg, marginTop: spacing.sm },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.lg, marginTop: spacing.sm },
   metaItem: { flexDirection: 'row', alignItems: 'center' },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: spacing.md },
   tagPill: {
